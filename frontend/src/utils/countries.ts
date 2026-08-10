@@ -1,0 +1,53 @@
+export interface CountryCurrency {
+  country: string;
+  code: string;
+  currency: string;
+  symbol: string;
+}
+
+export const COUNTRIES_CURRENCIES: CountryCurrency[] = [
+  { country: 'India', code: 'IN', currency: 'INR', symbol: '₹' },
+  { country: 'United States', code: 'US', currency: 'USD', symbol: '$' },
+  { country: 'United Kingdom', code: 'GB', currency: 'GBP', symbol: '£' },
+  { country: 'European Union', code: 'EU', currency: 'EUR', symbol: '€' },
+  { country: 'United Arab Emirates', code: 'AE', currency: 'AED', symbol: 'د.إ' },
+  { country: 'Canada', code: 'CA', currency: 'CAD', symbol: 'CA$' },
+  { country: 'Australia', code: 'AU', currency: 'AUD', symbol: 'A$' },
+  { country: 'Singapore', code: 'SG', currency: 'SGD', symbol: 'S$' },
+  { country: 'Japan', code: 'JP', currency: 'JPY', symbol: '¥' },
+  { country: 'China', code: 'CN', currency: 'CNY', symbol: '¥' },
+  { country: 'Saudi Arabia', code: 'SA', currency: 'SAR', symbol: '﷼' },
+  { country: 'Switzerland', code: 'CH', currency: 'CHF', symbol: 'CHF' },
+  { country: 'Germany', code: 'DE', currency: 'EUR', symbol: '€' },
+  { country: 'France', code: 'FR', currency: 'EUR', symbol: '€' },
+  { country: 'Italy', code: 'IT', currency: 'EUR', symbol: '€' },
+  { country: 'Spain', code: 'ES', currency: 'EUR', symbol: '€' },
+  { country: 'Netherlands', code: 'NL', currency: 'EUR', symbol: '€' },
+  { country: 'Brazil', code: 'BR', currency: 'BRL', symbol: 'R$' },
+  { country: 'South Africa', code: 'ZA', currency: 'ZAR', symbol: 'R' },
+  { country: 'Russia', code: 'RU', currency: 'RUB', symbol: '₽' },
+  { country: 'Mexico', code: 'MX', currency: 'MXN', symbol: 'Mex$' },
+  { country: 'Indonesia', code: 'ID', currency: 'IDR', symbol: 'Rp' },
+  { country: 'Malaysia', code: 'MY', currency: 'MYR', symbol: 'RM' },
+  { country: 'Turkey', code: 'TR', currency: 'TRY', symbol: '₺' },
+  { country: 'South Korea', code: 'KR', currency: 'KRW', symbol: '₩' },
+  { country: 'Thailand', code: 'TH', currency: 'THB', symbol: '฿' },
+  { country: 'Vietnam', code: 'VN', currency: 'VND', symbol: '₫' },
+  { country: 'Philippines', code: 'PH', currency: 'PHP', symbol: '₱' },
+  { country: 'Bangladesh', code: 'BD', currency: 'BDT', symbol: '৳' },
+  { country: 'Sri Lanka', code: 'LK', currency: 'LKR', symbol: 'Rs' },
+  { country: 'Nepal', code: 'NP', currency: 'NPR', symbol: 'Rs' },
+  { country: 'Pakistan', code: 'PK', currency: 'PKR', symbol: '₨' },
+  { country: 'New Zealand', code: 'NZ', currency: 'NZD', symbol: 'NZ$' },
+  { country: 'Nigeria', code: 'NG', currency: 'NGN', symbol: '₦' },
+  { country: 'Kenya', code: 'KE', currency: 'KES', symbol: 'KSh' },
+  { country: 'Egypt', code: 'EG', currency: 'EGP', symbol: 'E£' },
+  { country: 'Israel', code: 'IL', currency: 'ILS', symbol: '₪' },
+  { country: 'Argentina', code: 'AR', currency: 'ARS', symbol: '$' },
+  { country: 'Colombia', code: 'CO', currency: 'COP', symbol: '$' },
+  { country: 'Chile', code: 'CL', currency: 'CLP', symbol: '$' },
+  { country: 'Kuwait', code: 'KW', currency: 'KWD', symbol: 'KD' },
+  { country: 'Qatar', code: 'QA', currency: 'QAR', symbol: 'QR' },
+  { country: 'Oman', code: 'OM', currency: 'OMR', symbol: 'RO' },
+  { country: 'Bahrain', code: 'BH', currency: 'BHD', symbol: 'BD' },
+];
