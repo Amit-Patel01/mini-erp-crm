@@ -7,13 +7,17 @@ async function main() {
   console.log('🌱 Starting Prisma database seeding...');
 
   // 1. Clean existing records
-  await prisma.challanItem.deleteMany();
-  await prisma.challan.deleteMany();
-  await prisma.stockMovement.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.followUp.deleteMany();
-  await prisma.customer.deleteMany();
-  await prisma.user.deleteMany();
+  try {
+    await prisma.challanItem.deleteMany();
+    await prisma.challan.deleteMany();
+    await prisma.stockMovement.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.followUp.deleteMany();
+    await prisma.customer.deleteMany();
+    await prisma.user.deleteMany();
+  } catch (e) {
+    console.log('Initializing database tables for the first time...');
+  }
 
   // 2. Create Users
   const adminPassword = await bcrypt.hash('Admin@123', 10);
