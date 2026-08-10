@@ -76,7 +76,7 @@ PostgreSQL 16 (Neon / Docker Container)
 
 ```env
 PORT=5000
-DATABASE_URL="postgresql://neondb_owner:npg_UzYLofN1W2nM@ep-twilight-fog-avlj1355.c-11.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://neondb_owner:pass@avc-twilight-fog-avlj1355.c-11.us-east-1.aws.neon.tech/neondb?sslmode=require"
 JWT_SECRET="mini_erp_crm_super_secret_jwt_key_2026_production"
 JWT_EXPIRES_IN="24h"
 CLIENT_URL="http://localhost:3000"
