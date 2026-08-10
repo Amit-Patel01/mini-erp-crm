@@ -8,7 +8,6 @@ import {
   Search,
   Plus,
   Printer,
-  Download,
   CheckCircle2,
   XCircle,
   AlertTriangle,
@@ -16,9 +15,6 @@ import {
   Eye,
   X,
 } from 'lucide-react';
-
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 export const ChallansPage: React.FC = () => {
   const [challans, setChallans] = useState<Challan[]>([]);
@@ -182,52 +178,8 @@ export const ChallansPage: React.FC = () => {
     }
   };
 
-  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleDownloadPDF = async () => {
-    if (!viewChallan) return;
-    const element = document.getElementById('printable-challan-invoice');
-    if (!element) return;
-
-    setIsDownloadingPDF(true);
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        imageTimeout: 0,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const imgWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, Math.min(imgHeight, pdfHeight - margin * 2));
-      pdf.save(`Delivery_Challan_${viewChallan.challanNumber}.pdf`);
-    } catch (err: any) {
-      console.error('Direct PDF export error:', err);
-      const prevTitle = document.title;
-      document.title = `Delivery_Challan_${viewChallan.challanNumber}`;
-      window.print();
-      document.title = prevTitle;
-    } finally {
-      setIsDownloadingPDF(false);
-    }
   };
 
   // Calculate live preview total in builder
