@@ -16,21 +16,18 @@ export class AuthService {
     try {
       const userCount = await prisma.user.count();
       if (userCount === 0) {
-        console.log('Database user table is empty. Auto-seeding default users...');
+        console.log('Database user table is empty. Auto-seeding System Admin user...');
         const adminPass = await bcrypt.hash('Admin@123', 10);
-        const salesPass = await bcrypt.hash('Sales@123', 10);
-        const warehousePass = await bcrypt.hash('Warehouse@123', 10);
-        const accountsPass = await bcrypt.hash('Accounts@123', 10);
 
-        await prisma.user.createMany({
-          data: [
-            { name: 'System Admin', email: 'admin@example.com', password: adminPass, role: 'ADMIN' },
-            { name: 'Sarah Sales Manager', email: 'sales@example.com', password: salesPass, role: 'SALES' },
-            { name: 'Wayne Warehouse Ops', email: 'warehouse@example.com', password: warehousePass, role: 'WAREHOUSE' },
-            { name: 'Alex Accounts Lead', email: 'accounts@example.com', password: accountsPass, role: 'ACCOUNTS' },
-          ],
+        await prisma.user.create({
+          data: {
+            name: 'System Admin',
+            email: 'admin@example.com',
+            password: adminPass,
+            role: 'ADMIN',
+          },
         });
-        console.log('Default users auto-seeded successfully.');
+        console.log('System Admin user auto-seeded successfully.');
       }
     } catch (e) {
       console.error('Error during autoSeedUsersIfEmpty:', e);

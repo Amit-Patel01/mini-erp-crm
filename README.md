@@ -1,21 +1,21 @@
 # Mini ERP + CRM Operations Portal
 
-A production-ready, full-stack **Wholesale & Distribution Operations Management Portal** featuring Customer CRM with follow-up tracking, Product Inventory with low-stock alerts, Sales Delivery Challan generation with auto-numbering, transactional stock locking, direct PDF export, User Registration & Password Management, Role-Based Access Control (RBAC), and a rich operations analytics dashboard.
+A production-ready, full-stack **Wholesale & Distribution Operations Management Portal** featuring Customer CRM with follow-up tracking, Product Inventory with low-stock alerts, Sales Delivery Challan generation with auto-numbering, transactional stock locking, print-to-PDF invoice engine, Admin User Management & Password Reset, Role-Based Access Control (RBAC), and a real-time operations analytics dashboard.
 
 ---
 
 ## Technical Architecture
 
 ```text
-React + Vite (Frontend)
+React + Vite (Frontend - Vercel)
        ↓
 Axios + JWT Auth
        ↓
-Express + TypeScript (Backend)
+Express + TypeScript (Backend - Render)
        ↓
 Prisma ORM
        ↓
-PostgreSQL 16 (Docker Container)
+PostgreSQL 16 (Neon / Docker Container)
 ```
 
 ---
@@ -26,20 +26,19 @@ PostgreSQL 16 (Docker Container)
 - **Node.js** (v18.x or v20.x recommended)
 - **npm** (v9.x or higher)
 
-*(Note: PostgreSQL 16 is hosted inside a Docker container. No local native installation of PostgreSQL or `psql` is required on Windows).*
+*(Note: PostgreSQL 16 is hosted inside a Docker container locally or via Neon.tech in cloud deployment. No native local installation of PostgreSQL or `psql` is required on Windows).*
 
 ---
 
 ## Core Modules & Capabilities
 
 ### 1. Modern Light Theme UI System & Global Branding
-- Clean white card layout, sleek horizontal top navbar navigation with user popover menu.
+- Clean white layout, sleek horizontal top navbar navigation with user popover menu.
 - Customizable Corporate Branding (Logo, Title, Favicon) and Operating Country / Global Currency selection (`INR ₹`, `USD $`, `EUR €`, `GBP £`, `AED د.إ`, `JPY ¥`, etc.).
 
-### 2. Authentication, Roles & Account Management
-- **4 Pre-configured User Roles**: `ADMIN`, `SALES`, `WAREHOUSE`, `ACCOUNTS`.
-- **User Self-Registration**: Registration route (`/register`) for new team members with automatic JWT token creation.
-- **Admin User Management**: Admin can view all accounts, create team members, and reset user passwords directly (`/api/users`).
+### 2. Authentication, Roles & Admin User Management
+- **Role-Based Access Control**: Configurable roles (`ADMIN`, `SALES`, `WAREHOUSE`, `ACCOUNTS`).
+- **Admin User Management**: System Administrator can view all team members, create new accounts, reset user passwords, and remove user accounts directly from the Settings portal (`/api/users`).
 
 ### 3. Customer CRM & Follow-Up Tracking
 - Filterable wholesale customer directory with search across name, business, phone, and email.
@@ -52,11 +51,11 @@ PostgreSQL 16 (Docker Container)
 - Manual Stock Adjustment modal (Stock Inward `IN` / Stock Outward `OUT`) with mandatory reference reasons.
 - Dedicated **Stock Movement Audit Feed** tracking all inventory transactions.
 
-### 5. Sales Delivery Challans, Stock Locking & Direct PDF Download
+### 5. Sales Delivery Challans, Stock Locking & A4 Invoice Printing
 - Sequential auto-numbering generation (`CH-2026-0001`).
 - Line item pricing, SKU, and product name snapshotting.
 - **Atomic `$transaction` Stock Locking**: Confirming a sales challan checks stock for every line item inside a database transaction. If inventory is insufficient for any item, the entire transaction rolls back cleanly with HTTP 400 details (`{ success: false, message: "...", available: X, requested: Y }`).
-- **Direct PDF Export**: Click **Download PDF** on any delivery challan to directly export a clean A4 PDF (`Delivery_Challan_CH-2026-XXXX.pdf`) using client-side `html2pdf.js` rendering.
+- **A4 Delivery Challan Printing**: High-resolution print engine for delivery challans.
 - Reversibility: Cancelling a confirmed challan automatically restores stock back to inventory and logs an `IN` movement.
 
 ### 6. Operations Dashboard
@@ -65,14 +64,11 @@ PostgreSQL 16 (Docker Container)
 
 ---
 
-## Seed Test Credentials
+## System Administrator Credentials
 
 | Role | Name | Email | Password | Allowed Portal Capabilities |
 |---|---|---|---|---|
-| **ADMIN** | System Admin | `admin@example.com` | `Admin@123` | Full access across all portal modules & User Management |
-| **SALES** | Sarah Manager | `sales@example.com` | `Sales@123` | Dashboard, CRM Customers, Follow-ups, Create/View Challans |
-| **WAREHOUSE** | Wayne Ops | `warehouse@example.com` | `Warehouse@123` | Dashboard, Products & Stock, Stock Adjustments, Movement Audit |
-| **ACCOUNTS** | Alex Lead | `accounts@example.com` | `Accounts@123` | Dashboard, Financial Analytics, View Challans & Customers |
+| **ADMIN** | System Admin | `admin@example.com` | `Admin@123` | Full access across all portal modules & Admin User Management |
 
 ---
 
@@ -80,8 +76,8 @@ PostgreSQL 16 (Docker Container)
 
 ```env
 PORT=5000
-DATABASE_URL="postgresql://erp_user:erp_password@localhost:5432/mini_erp?schema=public"
-JWT_SECRET="change_this_secret"
+DATABASE_URL="postgresql://neondb_owner:npg_UzYLofN1W2nM@ep-twilight-fog-avlj1355.c-11.us-east-1.aws.neon.tech/neondb?sslmode=require"
+JWT_SECRET="mini_erp_crm_super_secret_jwt_key_2026_production"
 JWT_EXPIRES_IN="24h"
 CLIENT_URL="http://localhost:3000"
 ```
@@ -92,10 +88,10 @@ CLIENT_URL="http://localhost:3000"
 
 ### 1. PostgreSQL Docker Container Setup
 
-Start the PostgreSQL 16 Alpine container running in Docker:
+Start the PostgreSQL 16 Alpine container running in Docker locally:
 
 ```bash
-docker compose up -d
+docker compose up postgres -d
 ```
 
 Verify container status:
@@ -119,7 +115,7 @@ npx prisma generate
 # Sync schema with PostgreSQL database
 npx prisma db push
 
-# Seed initial users, customers, products, stock, and sample challans
+# Seed initial System Admin user
 npm run seed
 
 # Run backend development server
@@ -143,7 +139,7 @@ npm install
 npm run dev
 ```
 
-The Vite React application will start on **`http://localhost:3000`** (or `http://localhost:5173`).
+The Vite React application will start on **`http://localhost:3000`**.
 
 ---
 
@@ -151,7 +147,6 @@ The Vite React application will start on **`http://localhost:3000`** (or `http:/
 
 ### Authentication & Profile (`/api/auth`)
 - `POST /api/auth/login`: Authenticate user with email and password. Returns JWT token and user profile.
-- `POST /api/auth/register`: Self-registration for new users.
 - `PUT /api/auth/profile`: Update user profile name, email ID, and password.
 - `GET /api/auth/me`: Get profile details of the logged-in user.
 
@@ -200,18 +195,9 @@ A ready-to-import Postman collection is included in the project root:
 
 ---
 
-## Deployment & Production Notes
+## Live Cloud Deployment & Docker Notes
 
-1. **Production Docker Build**:
-   - Set `DATABASE_URL` pointing to host/managed PostgreSQL database instance.
-2. **Security**:
-   - Change `JWT_SECRET` in production `.env`.
-3. **Database Migrations**:
-   - Run `npx prisma migrate deploy` in production CI/CD pipelines.
-
----
-
-## Assumptions & Known Limitations
-
-- **Multi-Currency Support**: Configurable via Settings page (`INR ₹`, `USD $`, `EUR €`, `AED د.إ`, etc.).
-- **Atomic Stock Lock**: Executed synchronously inside database transactions (`Prisma $transaction`).
+See [DEPLOYMENT.md](file:///d:/Myproject/erp+crm/DEPLOYMENT.md) for full step-by-step cloud deployment instructions:
+- **Database**: Managed PostgreSQL 16 on Neon.tech.
+- **Backend**: Containerized Express API Web Service on Render.com.
+- **Frontend**: Vite React static deployment on Vercel.com with SPA rewrites (`vercel.json`).

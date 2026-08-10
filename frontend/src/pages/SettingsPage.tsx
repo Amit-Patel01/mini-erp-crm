@@ -14,6 +14,7 @@ import {
   User as UserIcon,
   AlertCircle,
   Users,
+  ShieldCheck,
   Key,
   UserPlus,
   Trash2,
@@ -406,31 +407,22 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {/* System Default Passwords Box */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
-              <Key className="w-4 h-4 text-amber-500" />
-              <span>Default System User Credentials Reference</span>
+          <div className="p-4 rounded-xl bg-indigo-50/60 border border-indigo-100 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-indigo-950 uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                <span>Primary System Administrator Credential</span>
+              </div>
+              <span className="text-[11px] font-medium text-indigo-700">Role: ADMIN (Full Access)</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs pt-1">
-              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                <div className="font-bold text-slate-900">Admin</div>
-                <div className="text-[11px] text-slate-500 truncate">admin@example.com</div>
-                <div className="font-mono text-[11px] font-bold text-indigo-600 mt-1">Pass: Admin@123</div>
+            <div className="p-3 rounded-lg bg-white border border-indigo-100 flex items-center justify-between text-xs">
+              <div>
+                <div className="font-bold text-slate-900">System Admin</div>
+                <div className="text-[11px] text-slate-500">admin@example.com</div>
               </div>
-              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                <div className="font-bold text-slate-900">Sales Executive</div>
-                <div className="text-[11px] text-slate-500 truncate">sales@example.com</div>
-                <div className="font-mono text-[11px] font-bold text-indigo-600 mt-1">Pass: Sales@123</div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                <div className="font-bold text-slate-900">Warehouse Ops</div>
-                <div className="text-[11px] text-slate-500 truncate">warehouse@example.com</div>
-                <div className="font-mono text-[11px] font-bold text-indigo-600 mt-1">Pass: Warehouse@123</div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                <div className="font-bold text-slate-900">Accounts Lead</div>
-                <div className="text-[11px] text-slate-500 truncate">accounts@example.com</div>
-                <div className="font-mono text-[11px] font-bold text-indigo-600 mt-1">Pass: Accounts@123</div>
+              <div className="text-right">
+                <div className="text-[10px] text-slate-400 font-medium">Default Password</div>
+                <div className="font-mono text-xs font-bold text-indigo-600">Admin@123</div>
               </div>
             </div>
           </div>
