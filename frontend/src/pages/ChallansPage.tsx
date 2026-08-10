@@ -620,14 +620,6 @@ export const ChallansPage: React.FC = () => {
               </Badge>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={handleDownloadPDF}
-                  disabled={isDownloadingPDF}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-600/30 cursor-pointer disabled:opacity-50"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{isDownloadingPDF ? 'Downloading PDF...' : 'Download PDF'}</span>
-                </button>
-                <button
                   onClick={handlePrint}
                   className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-600/30 cursor-pointer"
                 >

@@ -95,15 +95,6 @@ export const LoginPage: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          <div className="text-center pt-2">
-            <p className="text-xs text-slate-600 font-medium">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-bold text-indigo-600 hover:text-indigo-800 underline">
-                Create an Account here
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
