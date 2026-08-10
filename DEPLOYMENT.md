@@ -1,6 +1,6 @@
 # Production Deployment Guide: Mini ERP + CRM Operations Portal
 
-This guide provides step-by-step instructions for deploying the **Mini ERP + CRM Operations Portal** live to cloud production environments using free-tier services (**Render**, **Neon/Supabase**, **Vercel**).
+This guide provides step-by-step instructions for deploying the **Mini ERP + CRM Operations Portal** live to cloud production environments using free-tier services (**Render**, **Neon/Supabase**, **Vercel**, **Docker**).
 
 ---
 
@@ -10,7 +10,7 @@ You can host a managed PostgreSQL 16 database for free on **Neon.tech**, **Supab
 
 ### Option A: Neon.tech (Recommended)
 1. Sign up at [https://neon.tech](https://neon.tech).
-2. Click **Create Project** -> Name it `  `.
+2. Click **Create Project** -> Name it `mini-erp-crm`.
 3. Copy the provided PostgreSQL connection string:
    ```env
    DATABASE_URL="postgresql://<user>:<password>@<ep-hostname>.neon.tech/mini_erp?sslmode=require"
@@ -23,29 +23,28 @@ You can host a managed PostgreSQL 16 database for free on **Neon.tech**, **Supab
 
 ---
 
-## 2. Backend Deployment (Render.com Web Service)
+## 2. Backend Docker Container Deployment (Render.com)
 
-1. Push your codebase to a **GitHub repository**.
+Render supports direct deployment of Docker containers using your repository's `backend/Dockerfile`!
+
+1. Push your codebase to GitHub: `https://github.com/Amit-Patel01/mini-erp-crm.git`.
 2. Log into [https://render.com](https://render.com).
 3. Click **New +** -> **Web Service**.
-4. Connect your GitHub repository.
-5. Configure Web Service settings:
+4. Select your GitHub repository.
+5. Render automatically picks up `backend/Dockerfile`:
    - **Name**: `mini-erp-backend`
-   - **Root Directory**: `backend`
-   - **Environment**: `Node`
-   - **Build Command**: `npm install && npx prisma generate && npx prisma db push && npm run build`
-   - **Start Command**: `npm start`
+   - **Environment**: `Docker`
+   - **Docker Context**: `backend`
+   - **Dockerfile Path**: `Dockerfile`
 6. Add Environment Variables:
    - `PORT`: `5000`
    - `DATABASE_URL`: *(Your Neon/Supabase PostgreSQL connection string)*
    - `JWT_SECRET`: *(A long random secret string)*
    - `JWT_EXPIRES_IN`: `24h`
-   - `CLIENT_URL`: *(Your Vercel/Netlify frontend URL)*
+   - `CLIENT_URL`: *(Your Vercel frontend URL)*
 7. Click **Deploy Web Service**.
-8. Once deployed, run seeding against production DB:
-   - In Render Web Service Shell / console, run: `npm run seed`
 
-Your backend API will be live at `https://mini-erp-backend.onrender.com`.
+Your Dockerized backend API will be live at `https://mini-erp-backend.onrender.com`.
 
 ---
 
@@ -65,7 +64,25 @@ Your frontend UI will be live at `https://mini-erp-crm.vercel.app`.
 
 ---
 
-## 4. Post-Deployment Verification
+## 4. Alternative Cloud Docker Deployment Options
+
+### Option A: Railway.app (Docker Compose / Dockerfile)
+1. Log into [Railway.app](https://railway.app).
+2. Click **New Project** -> **Deploy from GitHub Repo**.
+3. Railway automatically detects `docker-compose.yml` and `backend/Dockerfile` and provisions the Docker containers.
+
+### Option B: AWS ECS / ECR (AWS Elastic Container Service)
+1. Push Docker image to Amazon ECR:
+   ```bash
+   docker build -t mini-erp-backend ./backend
+   docker tag mini-erp-backend:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/mini-erp-backend:latest
+   docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/mini-erp-backend:latest
+   ```
+2. Launch AWS ECS Task Definition connecting to RDS PostgreSQL.
+
+---
+
+## 5. Post-Deployment Verification
 
 1. Open your live Vercel URL: `https://mini-erp-crm.vercel.app`.
 2. Test login using standard seeded credentials:
