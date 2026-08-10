@@ -16,7 +16,7 @@ export class AuthService {
     try {
       const userCount = await prisma.user.count();
       if (userCount === 0) {
-        console.log('🌱 Database user table is empty. Auto-seeding demo users...');
+        console.log('Database user table is empty. Auto-seeding default users...');
         const adminPass = await bcrypt.hash('Admin@123', 10);
         const salesPass = await bcrypt.hash('Sales@123', 10);
         const warehousePass = await bcrypt.hash('Warehouse@123', 10);
@@ -30,7 +30,7 @@ export class AuthService {
             { name: 'Alex Accounts Lead', email: 'accounts@example.com', password: accountsPass, role: 'ACCOUNTS' },
           ],
         });
-        console.log('✅ Demo users auto-seeded successfully!');
+        console.log('Default users auto-seeded successfully.');
       }
     } catch (e) {
       console.error('Error during autoSeedUsersIfEmpty:', e);
