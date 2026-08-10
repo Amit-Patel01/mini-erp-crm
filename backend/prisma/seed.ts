@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting Prisma database seeding...');
+  console.log('Starting Prisma database seeding...');
 
   // 1. Clean existing records
   try {
@@ -61,7 +61,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created 4 Role-based Users (Admin, Sales, Warehouse, Accounts)');
+  console.log('Created 4 Role-based Users (Admin, Sales, Warehouse, Accounts)');
 
   // 3. Create Sample Customers
   const today = new Date();
@@ -69,14 +69,14 @@ async function main() {
     data: {
       customerName: 'Rajesh Kumar',
       mobile: '9876543210',
-      email: 'rajesh@apexwholesalers.com',
-      businessName: 'Apex Wholesalers & Distributors',
-      gstNumber: '27AAAAA0000A1Z5',
+      email: 'rajesh@apexwholesales.com',
+      businessName: 'Apex Wholesale Traders',
+      gstNumber: '27AAAAA1111A1Z5',
       customerType: 'WHOLESALE',
-      address: 'Plot 45, Industrial Area Phase II, Mumbai',
+      address: 'Shop 104, Grain Market, APMC Complex, Navi Mumbai',
       status: 'ACTIVE',
-      followUpDate: today,
-      notes: 'Interested in bulk order of barcode scanners and label printers.',
+      followUpDate: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000),
+      notes: 'Interested in bulk orders for Q3 barcode inventory scanners.',
     },
   });
 
@@ -84,14 +84,14 @@ async function main() {
     data: {
       customerName: 'Priya Sharma',
       mobile: '9812345678',
-      email: 'priya@metroretail.com',
-      businessName: 'Metro Super Retail Mart',
-      gstNumber: '27BBBBB1111B2Z8',
+      email: 'priya@sharmaretail.com',
+      businessName: 'Sharma Super Mart',
+      gstNumber: '27BBBBB9999B2Z0',
       customerType: 'RETAIL',
-      address: 'Shop 12, Commercial Hub, Bandra West, Mumbai',
+      address: 'Plot 45, MG Road, Pune',
       status: 'ACTIVE',
-      followUpDate: new Date(today.getTime() + 86400000 * 2), // 2 days later
-      notes: 'Monthly replenishment discussion scheduled.',
+      followUpDate: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000),
+      notes: 'Regular retail customer. Requires monthly delivery challan updates.',
     },
   });
 
@@ -110,7 +110,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Sample Customers');
+  console.log('Created Sample Customers');
 
   // 4. Create Follow-Up Logs
   await prisma.followUp.create({
@@ -131,7 +131,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Customer Follow-ups');
+  console.log('Created Customer Follow-ups');
 
   // 5. Create Sample Products
   const p1 = await prisma.product.create({
@@ -182,7 +182,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Sample Products with Low Stock Indicators');
+  console.log('Created Sample Products with Low Stock Indicators');
 
   // 6. Create Initial Stock Movements
   await prisma.stockMovement.createMany({
@@ -218,7 +218,7 @@ async function main() {
     ],
   });
 
-  console.log('✅ Logged Initial Stock Movements');
+  console.log('Logged Initial Stock Movements');
 
   // 7. Create Sample Sales Challans
   // Challan 1: Confirmed Challan
@@ -244,13 +244,18 @@ async function main() {
     },
   });
 
-  // Log corresponding OUT movement for confirmed challan
+  // Deduct stock for confirmed challan 1
+  await prisma.product.update({
+    where: { id: p2.id },
+    data: { currentStock: { decrement: 6 } },
+  });
+
   await prisma.stockMovement.create({
     data: {
       productId: p2.id,
       quantity: 6,
       movementType: 'OUT',
-      reason: `Confirmed Sales Challan #${challan1.challanNumber}`,
+      reason: `Dispatched for Confirmed Delivery Challan #${challan1.challanNumber}`,
       createdBy: sales.name,
     },
   });
@@ -261,7 +266,7 @@ async function main() {
       challanNumber: 'CH-2026-0002',
       customerId: c2.id,
       totalQuantity: 15,
-      totalAmount: 3500 * 5 + 1800 * 10,
+      totalAmount: p1.unitPrice * 5 + p3.unitPrice * 10,
       status: 'DRAFT',
       createdBy: sales.name,
       items: {
@@ -285,13 +290,13 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Sample Sales Challans (1 Confirmed, 1 Draft)');
-  console.log('🎉 Seeding successfully finished!');
+  console.log('Created Sample Sales Challans (1 Confirmed, 1 Draft)');
+  console.log('Seeding successfully finished.');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeding error:', e);
+    console.error('Seeding error:', e);
     process.exit(1);
   })
   .finally(async () => {
