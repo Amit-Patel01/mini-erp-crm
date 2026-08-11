@@ -156,161 +156,185 @@ export class ChallanService {
     }
 
     // 6. If requested status is CONFIRMED, create inside a DATABASE TRANSACTION
-    return prisma.$transaction(async (tx) => {
-      // Check current stock for all items
-      for (const item of itemsData) {
-        const currentProd = await tx.product.findUnique({ where: { id: item.productId } });
-        if (!currentProd || currentProd.currentStock < item.quantity) {
+    return prisma.$transaction(
+      async (tx) => {
+        // Check current stock for all items in a single batch query
+        const productIds = itemsData.map((item) => item.productId);
+        const products = await tx.product.findMany({
+          where: { id: { in: productIds } },
+        });
+        const productMap = new Map(products.map((p) => [p.id, p]));
+
+        for (const item of itemsData) {
+          const currentProd = productMap.get(item.productId);
           const avail = currentProd ? currentProd.currentStock : 0;
-          throw new StockError(item.productName, avail, item.quantity);
+          if (!currentProd || currentProd.currentStock < item.quantity) {
+            throw new StockError(item.productName, avail, item.quantity);
+          }
         }
-      }
 
-      // Create Challan
-      const newChallan = await tx.challan.create({
-        data: {
-          challanNumber,
-          customerId: data.customerId,
-          totalQuantity,
-          totalAmount,
-          status: 'CONFIRMED',
-          createdBy,
-          items: {
-            create: itemsData,
+        // Create Challan
+        const newChallan = await tx.challan.create({
+          data: {
+            challanNumber,
+            customerId: data.customerId,
+            totalQuantity,
+            totalAmount,
+            status: 'CONFIRMED',
+            createdBy,
+            items: {
+              create: itemsData,
+            },
           },
-        },
-        include: {
-          customer: true,
-          items: true,
-        },
-      });
-
-      // Reduce stock and log stock movement for each item
-      for (const item of itemsData) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { currentStock: { decrement: item.quantity } },
+          include: {
+            customer: true,
+            items: true,
+          },
         });
 
-        await tx.stockMovement.create({
-          data: {
+        // Reduce stock in parallel and batch log stock movements
+        await Promise.all(
+          itemsData.map((item) =>
+            tx.product.update({
+              where: { id: item.productId },
+              data: { currentStock: { decrement: item.quantity } },
+            })
+          )
+        );
+
+        await tx.stockMovement.createMany({
+          data: itemsData.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             movementType: 'OUT',
             reason: `Sales Challan #${challanNumber}`,
             createdBy,
-          },
+          })),
         });
-      }
 
-      return newChallan;
-    });
+        return newChallan;
+      },
+      { maxWait: 10000, timeout: 15000 }
+    );
   }
 
   static async confirmChallan(id: string, user: { userId: string; name: string }) {
-    return prisma.$transaction(async (tx) => {
-      // 1. Fetch Challan & Items
-      const challan = await tx.challan.findUnique({
-        where: { id },
-        include: { items: true },
-      });
-
-      if (!challan) {
-        throw new NotFoundError('Challan not found');
-      }
-
-      // 2. Validate state transitions
-      if (challan.status === 'CONFIRMED') {
-        throw new AppError('Challan is already CONFIRMED', 400);
-      }
-      if (challan.status === 'CANCELLED') {
-        throw new AppError('Cannot confirm a CANCELLED challan', 400);
-      }
-
-      // 3. Stock validation check for all line items
-      for (const item of challan.items) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId },
+    return prisma.$transaction(
+      async (tx) => {
+        // 1. Fetch Challan & Items
+        const challan = await tx.challan.findUnique({
+          where: { id },
+          include: { items: true },
         });
 
-        const available = product ? product.currentStock : 0;
-        if (!product || available < item.quantity) {
-          throw new StockError(item.productName, available, item.quantity);
+        if (!challan) {
+          throw new NotFoundError('Challan not found');
         }
-      }
 
-      // 4. Reduce stock & log OUT Stock Movements
-      for (const item of challan.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { currentStock: { decrement: item.quantity } },
+        // 2. Validate state transitions
+        if (challan.status === 'CONFIRMED') {
+          throw new AppError('Challan is already CONFIRMED', 400);
+        }
+        if (challan.status === 'CANCELLED') {
+          throw new AppError('Cannot confirm a CANCELLED challan', 400);
+        }
+
+        // 3. Stock validation check for all line items in a single batch query
+        const productIds = challan.items.map((i) => i.productId);
+        const products = await tx.product.findMany({
+          where: { id: { in: productIds } },
         });
+        const productMap = new Map(products.map((p) => [p.id, p]));
 
-        await tx.stockMovement.create({
-          data: {
+        for (const item of challan.items) {
+          const product = productMap.get(item.productId);
+          const available = product ? product.currentStock : 0;
+          if (!product || available < item.quantity) {
+            throw new StockError(item.productName, available, item.quantity);
+          }
+        }
+
+        // 4. Reduce stock in parallel & batch log OUT Stock Movements
+        await Promise.all(
+          challan.items.map((item) =>
+            tx.product.update({
+              where: { id: item.productId },
+              data: { currentStock: { decrement: item.quantity } },
+            })
+          )
+        );
+
+        await tx.stockMovement.createMany({
+          data: challan.items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             movementType: 'OUT',
             reason: `Confirmed Sales Challan #${challan.challanNumber}`,
             createdBy: user.userId,
-          },
+          })),
         });
-      }
 
-      // 5. Update Challan status to CONFIRMED
-      const updatedChallan = await tx.challan.update({
-        where: { id },
-        data: { status: 'CONFIRMED' },
-        include: { customer: true, items: true },
-      });
+        // 5. Update Challan status to CONFIRMED
+        const updatedChallan = await tx.challan.update({
+          where: { id },
+          data: { status: 'CONFIRMED' },
+          include: { customer: true, items: true },
+        });
 
-      return updatedChallan;
-    });
+        return updatedChallan;
+      },
+      { maxWait: 10000, timeout: 15000 }
+    );
   }
 
   static async cancelChallan(id: string, user: { userId: string; name: string }) {
-    return prisma.$transaction(async (tx) => {
-      const challan = await tx.challan.findUnique({
-        where: { id },
-        include: { items: true },
-      });
+    return prisma.$transaction(
+      async (tx) => {
+        const challan = await tx.challan.findUnique({
+          where: { id },
+          include: { items: true },
+        });
 
-      if (!challan) {
-        throw new NotFoundError('Challan not found');
-      }
+        if (!challan) {
+          throw new NotFoundError('Challan not found');
+        }
 
-      if (challan.status === 'CANCELLED') {
-        throw new AppError('Challan is already CANCELLED', 400);
-      }
+        if (challan.status === 'CANCELLED') {
+          throw new AppError('Challan is already CANCELLED', 400);
+        }
 
-      // If it was CONFIRMED, restore product stock & log IN movement
-      if (challan.status === 'CONFIRMED') {
-        for (const item of challan.items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { currentStock: { increment: item.quantity } },
-          });
+        // If it was CONFIRMED, restore product stock & log IN movement
+        if (challan.status === 'CONFIRMED') {
+          await Promise.all(
+            challan.items.map((item) =>
+              tx.product.update({
+                where: { id: item.productId },
+                data: { currentStock: { increment: item.quantity } },
+              })
+            )
+          );
 
-          await tx.stockMovement.create({
-            data: {
+          await tx.stockMovement.createMany({
+            data: challan.items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               movementType: 'IN',
               reason: `Cancelled Sales Challan #${challan.challanNumber} (Stock Restocked)`,
               createdBy: user.userId,
-            },
+            })),
           });
         }
-      }
 
-      // Set status to CANCELLED
-      const updated = await tx.challan.update({
-        where: { id },
-        data: { status: 'CANCELLED' },
-        include: { customer: true, items: true },
-      });
+        // Set status to CANCELLED
+        const updated = await tx.challan.update({
+          where: { id },
+          data: { status: 'CANCELLED' },
+          include: { customer: true, items: true },
+        });
 
-      return updated;
-    });
+        return updated;
+      },
+      { maxWait: 10000, timeout: 15000 }
+    );
   }
 }
