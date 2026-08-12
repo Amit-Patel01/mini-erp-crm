@@ -3,6 +3,9 @@
 A production-ready, full-stack **Wholesale & Distribution Operations Management Portal** featuring Customer CRM with follow-up tracking, Product Inventory with low-stock alerts, Sales Delivery Challan generation with auto-numbering, transactional stock locking, print-to-PDF invoice engine, Admin User Management & Password Reset, Role-Based Access Control (RBAC), and a real-time operations analytics dashboard.
 
 ---
+## 🚀 Live Demo
+
+[Open Live Application](https://mini-erp-crm-eosin-three.vercel.app/login)
 
 ## Technical Architecture
 
